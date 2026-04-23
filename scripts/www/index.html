@@ -1,40 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>关键词高亮</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#f4f4f4;padding:20px;font-family:Microsoft YaHei}
-.main{background:#fff;padding:25px;border-radius:18px}
-h2{text-align:center;margin-bottom:20px;color:#222}
-input{width:100%;padding:14px;margin:10px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
-button{width:100%;padding:16px;background:#ff4444;color:#fff;border:none;border-radius:10px;font-size:17px;margin-top:10px}
-.tip{color:#666;text-align:center;margin-top:15px;line-height:1.5}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信关键词高亮</title>
+    <style>
+        body { font-family: sans-serif; max-width: 90%; margin: 50px auto; text-align: center; }
+        .input-box { width: 80%; padding: 15px; font-size: 18px; border: 1px solid #ddd; border-radius: 8px; margin: 20px 0; }
+        .btn { background: #ff4444; color: white; border: none; padding: 15px 40px; font-size: 20px; border-radius: 8px; cursor: pointer; }
+        .tip { color: #666; margin-top: 20px; }
+    </style>
 </head>
 <body>
-<div class="main">
-<h2>微信关键词高亮</h2>
-<input type="text" id="kw" placeholder="例：爸爸,作业,吃饭,老师">
-<button onclick="save()">保存并启动</button>
-<div class="tip">
-多个关键词用英文逗号 , 分隔<br>
-免费无会员 · 我写的原版
-</div>
-</div>
-<script>
-function save(){
-  let v=document.getElementById("kw").value.trim();
-  if(!v){alert("请输入关键词");return}
-  localStorage.setItem("keys",v);
-  alert("保存成功："+v);
-}
-window.onload=()=>{
-  let s=localStorage.getItem("keys");
-  if(s)document.getElementById("kw").value=s;
-}
-</script>
+    <h1>微信关键词高亮</h1>
+    <input type="text" id="keywords" class="input-box" placeholder="输入关键词，多个用英文逗号分隔">
+    <br>
+    <button class="btn" onclick="saveAndStart()">保存并启动</button>
+    <p class="tip">多个关键词用英文逗号, 分隔<br>免费无会员 · 我写的原版</p >
+
+    <script>
+        // 调试日志
+        function log(msg) { console.log("[调试]", msg); }
+
+        // 1. 保存关键词（自动去空格、不区分大小写）
+        function saveKeywords() {
+            let input = document.getElementById('keywords').value.trim();
+            if (!input) { alert("请输入关键词！"); return false; }
+
+            // 处理：分割 -> 去空格 -> 转小写（统一对比）
+            const keywordsArr = input.split(',')
+                .map(k => k.trim())       // 去掉每个关键词前后空格
+                .filter(k => k);         // 过滤空字符串（防止多逗号）
+            
+            // 转小写统一存储，后续对比也转小写
+            const lowerKeywords = keywordsArr.map(k => k.toLowerCase());
+            localStorage.setItem('targetKeywords', JSON.stringify(lowerKeywords));
+            log("保存（去空格+小写）：" + lowerKeywords);
+            alert("保存成功：" + keywordsArr.join(','));
+            return true;
+        }
+
+        // 2. 读取关键词（读取后保持小写）
+        function getKeywords() {
+            const stored = localStorage.getItem('targetKeywords');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // 3. 显示悬浮窗提醒
+        function showFloatingAlert(keyword) {
+            log("触发提醒：" + keyword);
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+                background: #ff4444; color: white; padding: 15px 30px; border-radius: 8px;
+                font-size: 18px; z-index: 9999;
+            `;
+            alertDiv.innerText = "检测到关键词：" + keyword;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+
+        // 4. 核心：对比消息（不区分大小写、忽略空格）
+        function checkMessage(message) {
+            const keywords = getKeywords();
+            if (!keywords.length) { alert("请先保存关键词！"); return false; }
+
+            // 处理消息：去空格、转小写
+            const cleanMessage = message.trim().toLowerCase();
+            log("对比消息（去空格+小写）：" + cleanMessage);
+
+            // 逐个对比关键词
+            for (const kw of keywords) {
+                if (cleanMessage.includes(kw)) {
+                    showFloatingAlert(kw);
+                    return true;
+                }
+            }
+            log("未匹配到关键词");
+            return false;
+        }
+
+        // 5. 模拟微信监听（可替换为真实监听逻辑）
+        function startListener() {
+            log("启动监听（支持不区分大小写、忽略空格）");
+            // 这里可替换为 AccessibilityService 等原生监听，JS 模拟测试用
+            setTimeout(() => {
+                const testMsg = "你好 蒙KK12345 测试"; // 测试大小写+空格
+                checkMessage(testMsg);
+            }, 2000);
+        }
+
+        // 6. 保存并启动
+        function saveAndStart() {
+            if (saveKeywords()) startListener();
+        }
+
+        // 页面加载恢复关键词
+        window.onload = () => {
+            const stored = localStorage.getItem('targetKeywords');
+            if (stored) {
+                const keywords = JSON.parse(stored);
+                document.getElementById('keywords').value = keywords.join(',');
+            }
+        };
+    </script>
 </body>
 </html>
