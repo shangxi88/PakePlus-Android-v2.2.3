@@ -1,11 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html>
+<head>
+<meta charset="utf-8">
+<title>关键词高亮</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f4f4f4;padding:20px;font-family:Microsoft YaHei}
+.main{background:#fff;padding:25px;border-radius:18px}
+h2{text-align:center;margin-bottom:20px;color:#222}
+input{width:100%;padding:14px;margin:10px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
+button{width:100%;padding:16px;background:#ff4444;color:#fff;border:none;border-radius:10px;font-size:17px;margin-top:10px}
+.tip{color:#666;text-align:center;margin-top:15px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="main">
+<h2>微信关键词高亮</h2>
+<input type="text" id="kw" placeholder="例：爸爸,作业,吃饭,老师">
+<button onclick="save()">保存并启动</button>
+<div class="tip">
+多个关键词用英文逗号 , 分隔<br>
+免费无会员 · 我写的原版
+</div>
+</div>
+<script>
+function save(){
+  let v=document.getElementById("kw").value.trim();
+  if(!v){alert("请输入关键词");return}
+  localStorage.setItem("keys",v);
+  alert("保存成功："+v);
+}
+window.onload=()=>{
+  let s=localStorage.getItem("keys");
+  if(s)document.getElementById("kw").value=s;
+}
+</script>
+</body>
 </html>
